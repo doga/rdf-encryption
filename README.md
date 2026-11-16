@@ -1,9 +1,9 @@
 # rdf-encryption
 
-Encryption-at-rest library for RDF. RDF datasets are:
+Encryption-at-rest library for RDF. Datasets are:
 
-1. Encrypted in-memory before storing them into RDF stores or files.
-1. Decrypted in-memory before use.
+1. encrypted in-memory before storing them in RDF stores or serialising them into files, and
+1. decrypted in-memory before use.
 
 Note that only literals are encrypted, and it is possible to encrypt only some literals. Indeed, it may be preferable to keep some literals in cleartext form in order to preserve the textual matching capabilities of SPARQL engines.
 
@@ -59,7 +59,34 @@ classDiagram
   note for PgpKeypair "Created from armored PGP public keys \nand private keys\nthat have been created beforehand.\nThis class does not itself generate new keypairs."
 ```
 
-## Features
+## What an encrypted dataset looks like
+
+This cleartext dataset in Turtle format:
+
+```turtle
+PREFIX : <http://site.example/>
+
+:person1 :name 'Jon Ka' .
+```
+
+… looks like this when encrypted:
+
+```turtle
+PREFIX qrmm: <https://vocab.qworum.net/qrmm.ttl#>
+PREFIX :     <http://site.example/>
+
+<< :person1 :name '''-----BEGIN PGP MESSAGE-----
+
+wV4DPdvZxaUmc4ESAQdAoJsU/M7HIiFI2qvNaDQza2g5j2PQFABvx4xsg4MR
+kUswcO5x3KLDPIEFSdpevCgSllmPEIHZwXOUnN0wodQCdICUx2ZRfpxGGI1L
+AnXmJFEd0jcB0NgQBkxeblsEhBC5hb7QBZFmzkFZrlOb5IRV6IJ2zYE0UEBu
+5EtdjOI/79X/a5UjDsr6Izg2
+=isQT
+-----END PGP MESSAGE-----'''
+ >> qrmm:pgpencrypted true .
+```
+
+The `qrmm:pgpencrypted` predicate if part of the [`qrmm` ontology](https://vocab.qworum.net/#qrmm).
 
 ## How to use
 
@@ -75,6 +102,8 @@ async function run() {
   const
   keypair = await createKeypair(),
   codec   = new Encrypter({keys: {encryption: keypair}}),
+
+  // in-memory dataset compliant with https://rdf.js.org/dataset-spec/#dataset-interface
   dataset = new Store();
 
   dataset.add(t.quad(
@@ -83,6 +112,7 @@ async function run() {
     t.literal('Jon Ka'),
   ));
 
+  // in-memory dataset compliant with https://rdf.js.org/dataset-spec/#dataset-interface
   const encryptedDataset = await codec.encrypt(dataset);
 }
 
@@ -128,33 +158,6 @@ rEoNAQCYttM/CyrPhPTTJVl0VOC7uahBzpY+kiy385j1KqHDBA==
 -----END PGP PRIVATE KEY BLOCK-----`
   }));
 }
-```
-
-## What an encrypted dataset looks like
-
-This cleartext dataset in Turtle format:
-
-```turtle
-PREFIX : <http://site.example/>
-
-:person1 :name 'Jon Ka' .
-```
-
-… looks like this when encrypted:
-
-```turtle
-PREFIX qrmm: <https://vocab.qworum.net/qrmm.ttl#>
-PREFIX :     <http://site.example/>
-
-<< :person1 :name '''-----BEGIN PGP MESSAGE-----
-
-wV4DPdvZxaUmc4ESAQdAoJsU/M7HIiFI2qvNaDQza2g5j2PQFABvx4xsg4MR
-kUswcO5x3KLDPIEFSdpevCgSllmPEIHZwXOUnN0wodQCdICUx2ZRfpxGGI1L
-AnXmJFEd0jcB0NgQBkxeblsEhBC5hb7QBZFmzkFZrlOb5IRV6IJ2zYE0UEBu
-5EtdjOI/79X/a5UjDsr6Izg2
-=isQT
------END PGP MESSAGE-----'''
- >> qrmm:pgpencrypted true .
 ```
 
 ## Other libraries this library depends on
