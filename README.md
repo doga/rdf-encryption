@@ -55,8 +55,8 @@ classDiagram
   }
   PgpKeypair --|> Keypair: extends
   Encrypter --> PgpKeypair : imports
-  note for Encrypter "Converts between encrypted and\n cleartext datasets in memory."
-  note for PgpKeypair "Created from armored PGP public keys \nand private keys\nthat have been created beforehand.\nThis class does not itself generate new keypairs."
+  note for Encrypter "Converts between encrypted and cleartext datasets."
+  note for PgpKeypair "Created from armored PGP public/private keys created beforehand."
 ```
 
 ## What an encrypted dataset looks like
@@ -86,7 +86,7 @@ AnXmJFEd0jcB0NgQBkxeblsEhBC5hb7QBZFmzkFZrlOb5IRV6IJ2zYE0UEBu
  >> qrmm:pgpencrypted true .
 ```
 
-The `qrmm:pgpencrypted` predicate if part of the [`qrmm` ontology](https://vocab.qworum.net/#qrmm).
+The `qrmm:pgpencrypted` predicate is part of the [`qrmm` ontology](https://vocab.qworum.net/#qrmm).
 
 ## How to use
 
