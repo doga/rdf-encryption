@@ -9,3 +9,7 @@ export {
 export { 
   Encrypter,
 } from "./lib/encrypter.mjs";
+
+export { 
+  IRI, iri,
+} from "./deps.mjs";

@@ -88,6 +88,8 @@ AnXmJFEd0jcB0NgQBkxeblsEhBC5hb7QBZFmzkFZrlOb5IRV6IJ2zYE0UEBu
 
 The `qrmm:pgpencrypted` predicate is part of the [`qrmm` ontology](https://vocab.qworum.net/#qrmm).
 
+_Note: TriG files can store any RDF dataset, whereas in Turtle files the statements cannot have a graph term, which makes Turtle unsuitable as a general-purpose serialisation format for RDF datasets._
+
 ## How to use
 
 ```javascript
