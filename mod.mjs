@@ -8,10 +8,6 @@ export {
 } from "./lib/pgp-keypair.mjs";
 
 export { 
-  CleartextDataset, // TODO delete
-} from "./lib/cleartext-dataset.mjs";
-
-export { 
   Codec,
 } from "./lib/codec.mjs";
 
