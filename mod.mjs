@@ -1,5 +1,6 @@
 export { 
-  Keypair, NotImplemented, 
+  Keypair, 
+  // NotImplemented, 
 } from "./lib/keypair.mjs";
 
 export { 
@@ -7,8 +8,12 @@ export {
 } from "./lib/pgp-keypair.mjs";
 
 export { 
-  CleartextDataset,
+  CleartextDataset, // TODO delete
 } from "./lib/cleartext-dataset.mjs";
+
+export { 
+  Codec,
+} from "./lib/codec.mjs";
 
 export { 
   IRI, iri,
