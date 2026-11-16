@@ -16,7 +16,7 @@ title: Encryption-at-rest and consumption-in-cleartext
 flowchart LR
   subgraph storage["Storage"]
     store["🔐 RDF store (encrypted)"]
-    file["🔐 RDF/Turtle file (encrypted)"]
+    trig["🔐 TriG file (encrypted)"]
   end
   subgraph conversion["Conversion"]
     cleartext["In-memory dataset (cleartext)"]
@@ -29,8 +29,8 @@ flowchart LR
     cleartext -- read --> prosumer
     encrypted -- write --> store
     store -- read --> encrypted
-    encrypted -- write --> file
-    file -- read --> encrypted
+    encrypted -- write --> trig
+    trig -- read --> encrypted
 ```
 
 ## Classes provided by this library
@@ -43,8 +43,8 @@ classDiagram
   direction LR
   class Encrypter {
     -config
-    +encode(dataset)
-    +decode(dataset)
+    +encrypt(dataset)
+    +decrypt(dataset)
   }
   class PgpKeypair {
     $create(armoredKeys)
