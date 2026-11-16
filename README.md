@@ -202,4 +202,8 @@ flowchart TD
   %%linkStyle 3 stroke:#ff3,stroke-width:4px,color:red;
 ```
 
+## Target runtimes
+
+This library can run on all JavaScript runtimes, both in-browser and off-browser.
+
 ∎
