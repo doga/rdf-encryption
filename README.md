@@ -114,7 +114,7 @@ async function run() {
   keypair   = await createKeypair(),
   encrypter = new Encrypter({
     keys      : {encryption: [keypair], decryption: [keypair]},
-    predicates: {select: iri`https://site.example/name`}
+    predicates: {select: [iri`https://site.example/name`]}
   });
 
   dataset.add(t.quad(
