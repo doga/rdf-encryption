@@ -92,8 +92,9 @@ _Note: TriG is a superset of Turtle. TriG files can store any RDF dataset, where
 
 ## Usage
 
+How to encrypt and decrypt an in-memory dataset.
+
 ```javascript
-// Encrypts and decrypts an in-memory dataset.
 
 import { 
   Encrypter, PgpKeypair, iri 
@@ -108,33 +109,29 @@ await run();
 
 async function run() {
   const
-  // in-memory dataset compliant with https://rdf.js.org/dataset-spec/#dataset-interface
-  dataset   = new Store(),
-
   keypair   = await createKeypair(),
   encrypter = new Encrypter({
     keys      : {encryption: [keypair], decryption: [keypair]},
-    predicates: {select: [iri`https://site.example/name`]}
-  });
+    predicates: {select: [iri`https://site.example/name`]} // omitting unused field: `ignore`
+  }),
 
-  dataset.add(t.quad(
-    t.namedNode('https://site.example/person/1'),
-    t.namedNode('https://site.example/name'),
-    t.literal('Jon Ka'),
-  ));
+  // in-memory dataset compliant with https://rdf.js.org/dataset-spec/#dataset-interface
+  dataset = new Store([
+    t.quad(
+      t.namedNode('https://site.example/person1'),
+      t.namedNode('https://site.example/name'),
+      t.literal('Jon Ka'),
+    )
+  ]),
 
-  const
   // in-memory dataset compliant with https://rdf.js.org/dataset-spec/#dataset-interface
   encryptedDataset = await encrypter.encrypt(dataset),
 
   // in-memory dataset compliant with https://rdf.js.org/dataset-spec/#dataset-interface
-  decryptedDataset = await encrypter.decrypt(encryptedDataset),
-  
-  encryptedDatasetStr = datasetToString(encryptedDataset),
-  decryptedDatasetStr = datasetToString(decryptedDataset);
+  decryptedDataset = await encrypter.decrypt(encryptedDataset);
 
-  console.debug('Encrypted dataset:\n', encryptedDatasetStr, '\n');
-  console.debug('Decrypted dataset:\n', decryptedDatasetStr);
+  console.debug('Encrypted dataset:\n', datasetToString(encryptedDataset), '\n');
+  console.debug('Decrypted dataset:\n', datasetToString(decryptedDataset));
 }
 
 
