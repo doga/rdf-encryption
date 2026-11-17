@@ -22,15 +22,15 @@ flowchart LR
     cleartext["In-memory dataset (cleartext)"]
     encrypted["🔐 In-memory dataset (encrypted)"]
   end
-    prosumer["🧑‍💻 Data producer/consumer"]
-    cleartext -- encrypt --> encrypted
-    encrypted -- decrypt --> cleartext
-    prosumer -- write --> cleartext
-    cleartext -- read --> prosumer
-    encrypted -- write --> store
-    store -- read --> encrypted
-    encrypted -- write --> trig
-    trig -- read --> encrypted
+  prosumer["🧑‍💻 Data producer/consumer"]
+  cleartext -- encrypt --> encrypted
+  encrypted -- decrypt --> cleartext
+  prosumer -- write --> cleartext
+  cleartext -- read --> prosumer
+  encrypted -- write --> store
+  store -- read --> encrypted
+  encrypted -- write --> trig
+  trig -- read --> encrypted
 ```
 
 ## Classes provided by this library
@@ -47,7 +47,7 @@ classDiagram
     +decrypt(dataset)
   }
   class PgpKeypair {
-    $create(armoredKeys)
+    +create(armoredKeys)$
   }
   class Keypair {
     +publicKey
@@ -86,7 +86,7 @@ yvXZ1CVZvK5Wv7TQpZTLBysn
  >> qrmm:pgpencrypted true .
 ```
 
-The `qrmm:pgpencrypted` predicate is part of the [`qrmm` ontology](https://vocab.qworum.net/#qrmm).
+The `qrmm:pgpencrypted` predicate is part of the [qrmm ontology](https://vocab.qworum.net/#qrmm).
 
 _Note: TriG is a superset of Turtle. TriG files can store any RDF dataset, whereas in Turtle files the statements cannot have a graph term. This makes TriG suitable as a general-purpose serialisation format for RDF datasets, but not Turtle._
 
