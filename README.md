@@ -88,7 +88,7 @@ yvXZ1CVZvK5Wv7TQpZTLBysn
 
 The `qrmm:pgpencrypted` predicate is part of the [`qrmm` ontology](https://vocab.qworum.net/#qrmm).
 
-_Note: TriG is a superset of Turtle. TriG files can store any RDF dataset, whereas in Turtle files the statements cannot have a graph term. This makes Turtle unsuitable as a general-purpose serialisation format for RDF datasets._
+_Note: TriG is a superset of Turtle. TriG files can store any RDF dataset, whereas in Turtle files the statements cannot have a graph term. This makes TriG suitable as a general-purpose serialisation format for RDF datasets, but not Turtle._
 
 ## Usage
 
