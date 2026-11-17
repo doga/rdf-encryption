@@ -128,7 +128,7 @@ async function run() {
   encryptedDataset = await encrypter.encrypt(dataset),
 
   // in-memory dataset compliant with https://rdf.js.org/dataset-spec/#dataset-interface
-  decryptedDataset = await encrypter.decrypt(dataset),
+  decryptedDataset = await encrypter.decrypt(encryptedDataset),
   
   encryptedDatasetStr = datasetToString(encryptedDataset),
   decryptedDatasetStr = datasetToString(decryptedDataset);
