@@ -90,10 +90,16 @@ The `qrmm:pgpencrypted` predicate is part of the [`qrmm` ontology](https://vocab
 
 _Note: TriG is a superset of Turtle. TriG files can store any RDF dataset, whereas in Turtle files the statements cannot have a graph term. This makes Turtle unsuitable as a general-purpose serialisation format for RDF datasets._
 
-## How to use
+## Usage
 
 ```javascript
-import { Encrypter, PgpKeypair } from "./mod.mjs";
+// Encrypts and decrypts an in-memory dataset.
+
+import { 
+  Encrypter, PgpKeypair, iri 
+} from "https://cdn.jsdelivr.net/gh/doga/rdf-encryption@1.0.0/mod.mjs";
+
+// https://github.com/rdfjs/N3.js
 import {
   Store, Parser, DataFactory as t, Writer,
 } from 'https://unpkg.com/n3@v2.13.12/browser/n3.esm.min.js';
@@ -102,11 +108,14 @@ await run();
 
 async function run() {
   const
-  keypair   = await createKeypair(),
-  encrypter = new Encrypter({keys: {encryption: [keypair]}}),
-
   // in-memory dataset compliant with https://rdf.js.org/dataset-spec/#dataset-interface
-  dataset = new Store();
+  dataset   = new Store(),
+
+  keypair   = await createKeypair(),
+  encrypter = new Encrypter({
+    keys      : {encryption: [keypair], decryption: [keypair]},
+    predicates: {select: iri`https://site.example/name`}
+  });
 
   dataset.add(t.quad(
     t.namedNode('https://site.example/person/1'),
@@ -114,9 +123,20 @@ async function run() {
     t.literal('Jon Ka'),
   ));
 
+  const
   // in-memory dataset compliant with https://rdf.js.org/dataset-spec/#dataset-interface
-  const encryptedDataset = await encrypter.encrypt(dataset);
+  encryptedDataset = await encrypter.encrypt(dataset),
+
+  // in-memory dataset compliant with https://rdf.js.org/dataset-spec/#dataset-interface
+  decryptedDataset = await encrypter.decrypt(dataset),
+  
+  encryptedDatasetStr = datasetToString(encryptedDataset),
+  decryptedDatasetStr = datasetToString(decryptedDataset);
+
+  console.debug('Encrypted dataset:\n', encryptedDatasetStr, '\n');
+  console.debug('Decrypted dataset:\n', decryptedDatasetStr);
 }
+
 
 async function createKeypair() {
   return (await PgpKeypair.create({
@@ -158,6 +178,49 @@ jQEAxnfpoi9UBKTYwg4f5EF2sO9wxN1rM9pAFSyWwUrslAU=
 -----END PGP PRIVATE KEY BLOCK-----`
   }));
 }
+
+
+function datasetToString(dataset) {
+  const res = [];
+  for (const quad of dataset) {
+    const {subject, predicate, object, graph} = quad;
+    res.push(`${termToString(subject)} ${termToString(predicate)} ${termToString(object)}`);
+  }
+  return res.join('\n');
+}
+
+
+function termToString(term) {
+  if (['Quad', 'Triple'].includes(term.termType)) {
+    const {subject, predicate, object} = term;
+    return `<< ${termToString(subject)} ${termToString(predicate)} ${termToString(object)} >>`;
+  }
+  return `${term.value}`;
+}
+```
+
+Output:
+
+```text
+Encrypted dataset:
+ << https://site.example/person/1 https://site.example/name -----BEGIN PGP MESSAGE-----
+
+wV4DSan8Z5TI1w0SAQdAot+/Q5Yu5JWdWAcdlSRDB+b3OeV+QglMx4B4zvQt
+PwAwfEgApUyLifgjpD9ZRzwE1J/7oeY2j/r8yKPyP1rT54RAbtxi7v5W+OXO
+oqNVhXaH0jcBuaC1uSPgHAhFh5t4vlwjnkqvuDEir73AhgviNtn0kX+wN1D0
+aMfISL2Q8twkk1rW0qV1wg1l
+=xSLV
+-----END PGP MESSAGE-----
+ >> https://vocab.qworum.net/qrmm.ttl#pgpencrypted true 
+
+Decrypted dataset:
+ https://site.example/person/1 https://site.example/name Jon Ka 
+```
+
+Run the code above by typing this in your terminal (requires [Deno](https://deno.com/) 2+):
+
+```shell
+deno run --allow-net --allow-run --allow-env --allow-read jsr:@andrewbrey/mdrb@3.0.4 --dax=false --mode=isolated 'https://raw.githubusercontent.com/doga/rdf-encryption/master/README.md'
 ```
 
 ## Other libraries this library depends on
