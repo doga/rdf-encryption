@@ -1,6 +1,6 @@
 # rdf-encryption
 
-Encryption-at-rest library for RDF. Datasets are:
+Encryption-at-rest for RDF. Datasets are:
 
 1. encrypted in-memory before storing them in RDF stores or serialising them into files, and
 1. decrypted in-memory before use.
@@ -18,7 +18,7 @@ flowchart LR
     store["🔐 RDF store (encrypted)"]
     trig["🔐 TriG file (encrypted)"]
   end
-  subgraph conversion["Conversion"]
+  subgraph conversion["Encryption & decryption "]
     cleartext["In-memory dataset (cleartext)"]
     encrypted["🔐 In-memory dataset (encrypted)"]
   end
@@ -56,12 +56,12 @@ classDiagram
   PgpKeypair --|> Keypair: extends
   Encrypter --> PgpKeypair : imports
   note for Encrypter "Converts between encrypted and cleartext datasets."
-  note for PgpKeypair "Created from armored PGP public/private keys generated beforehand."
+  note for PgpKeypair "Created from existing armored PGP public/private keys."
 ```
 
 ## What an encrypted dataset looks like
 
-This cleartext dataset in Turtle format:
+This cleartext dataset in Turtle (and TriG) format:
 
 ```turtle
 PREFIX : <http://site.example/>
@@ -77,18 +77,18 @@ PREFIX :     <http://site.example/>
 
 << :person1 :name '''-----BEGIN PGP MESSAGE-----
 
-wV4DPdvZxaUmc4ESAQdAoJsU/M7HIiFI2qvNaDQza2g5j2PQFABvx4xsg4MR
-kUswcO5x3KLDPIEFSdpevCgSllmPEIHZwXOUnN0wodQCdICUx2ZRfpxGGI1L
-AnXmJFEd0jcB0NgQBkxeblsEhBC5hb7QBZFmzkFZrlOb5IRV6IJ2zYE0UEBu
-5EtdjOI/79X/a5UjDsr6Izg2
-=isQT
+wV4DSan8Z5TI1w0SAQdAFvEFTO3aV4OkoxbYoSmtv+4sI9zehkd/Wc6/NNfn
+mWowKZJLQYHSQxXd5GIGnCR6BbpyrKNOkaWcMq8MNP8HCZqPoJF22Zg3Fcpo
+8tTKbNSn0jcBwNFpTs7TR+wvDjLvgzQFrLHgJTaY+c/38h7Fyt+ksTPzAni0
+yvXZ1CVZvK5Wv7TQpZTLBysn
+=N0UZ
 -----END PGP MESSAGE-----'''
  >> qrmm:pgpencrypted true .
 ```
 
 The `qrmm:pgpencrypted` predicate is part of the [`qrmm` ontology](https://vocab.qworum.net/#qrmm).
 
-_Note: TriG files can store any RDF dataset, whereas in Turtle files the statements cannot have a graph term, which makes Turtle unsuitable as a general-purpose serialisation format for RDF datasets._
+_Note: TriG is a superset of Turtle. TriG files can store any RDF dataset, whereas in Turtle files the statements cannot have a graph term. This makes Turtle unsuitable as a general-purpose serialisation format for RDF datasets._
 
 ## How to use
 
@@ -102,8 +102,8 @@ await run();
 
 async function run() {
   const
-  keypair = await createKeypair(),
-  codec   = new Encrypter({keys: {encryption: keypair}}),
+  keypair   = await createKeypair(),
+  encrypter = new Encrypter({keys: {encryption: [keypair]}}),
 
   // in-memory dataset compliant with https://rdf.js.org/dataset-spec/#dataset-interface
   dataset = new Store();
@@ -115,48 +115,46 @@ async function run() {
   ));
 
   // in-memory dataset compliant with https://rdf.js.org/dataset-spec/#dataset-interface
-  const encryptedDataset = await codec.encrypt(dataset);
+  const encryptedDataset = await encrypter.encrypt(dataset);
 }
 
 async function createKeypair() {
   return (await PgpKeypair.create({
     publicKey: `-----BEGIN PGP PUBLIC KEY BLOCK-----
 
-xjMEavjdExYJKwYBBAHaRw8BAQdA/WHmUoz8qqvgE7IOnKDbysMWMunHuoz+
-fmAIQV+ieDjNG0pvbiBTbWl0aCA8am9uQGV4YW1wbGUuY29tPsLAEwQTFgoA
-hQWCavjdEwMLCQcJEKpXMV8rD7LrRRQAAAAAABwAIHNhbHRAbm90YXRpb25z
-Lm9wZW5wZ3Bqcy5vcmc6aYe0KF7hfkRvTKZkbnHa0GbGSxhrzt3et+0hFaX1
-cwUVCggODAQWAAIBAhkBApsDAh4BFiEErzc3fL0fvXnu8X3fqlcxXysPsusA
-ABYcAQDjprR3sDL1Ll7+SyeA2snocWz3O9WrUg3r6VCOClQpJAEA+bk5vEmk
-0Iu8xMQQTf34XIa31WZ5sDViyYaH7AGRwQXOOARq+N0TEgorBgEEAZdVAQUB
-AQdA794PzZJvJZ4dkesmHExjECRFtvklIXv/OdbJ6S5vIDoDAQgHwr4EGBYK
-AHAFgmr43RMJEKpXMV8rD7LrRRQAAAAAABwAIHNhbHRAbm90YXRpb25zLm9w
-ZW5wZ3Bqcy5vcmezNARvykRket4o6PAn5v1gUNacVBbFoEEU7rbgNWwjBgKb
-DBYhBK83N3y9H7157vF936pXMV8rD7LrAABDeQEAjlan+tZQgbhkiZ3Qz1Jk
-1PWwv4MAsJkaPLf4ZT6sSg0BAJi20z8LKs+E9NMlWXRU4Lu5qEHOlj6SLLfz
-mPUqocME
-=MihV
+xjMEavv2wBYJKwYBBAHaRw8BAQdA80xKW/kssD8Lr+wjXrML4tBMWqPZN9CL
+jyikEE/nkRTNG0pvbiBTbWl0aCA8am9uQGV4YW1wbGUuY29tPsLAEwQTFgoA
+hQWCavv2wAMLCQcJEEPZUXMZhjlFRRQAAAAAABwAIHNhbHRAbm90YXRpb25z
+Lm9wZW5wZ3Bqcy5vcmdud6VVFuYC2f58ypRjNYbKJ2Fqh5Wsr/Agir5iUDrc
+cgUVCggODAQWAAIBAhkBApsDAh4BFiEE824sqUPAN/f1FwH7Q9lRcxmGOUUA
+AE/jAQCwYcEFK+eKXCqnPTcE7wMNknjcoblAcbU2YyWouf/jggD+Lrcw6jy1
+fsE/0TKQhql29km+EYwTYzr1BCZf/f56PwHOOARq+/bAEgorBgEEAZdVAQUB
+AQdAhg2C/OXuurVcak6ENtUv7RjmimoCqy3eej1O3GxRzj8DAQgHwr4EGBYK
+AHAFgmr79sAJEEPZUXMZhjlFRRQAAAAAABwAIHNhbHRAbm90YXRpb25zLm9w
+ZW5wZ3Bqcy5vcmcodDYGGeniloyzEVtT1h6Ae9P373Tvgc2SJfQrMBD35gKb
+DBYhBPNuLKlDwDf39RcB+0PZUXMZhjlFAACwzQEA1+hZat8Xq9F7nXgSniXn
+7S65m9fhdNGI4qHLz00puo0BAMZ36aIvVASk2MIOH+RBdrDvcMTdazPaQBUs
+lsFK7JQF
+=brsg
 -----END PGP PUBLIC KEY BLOCK-----`,
 
     privateKey: `-----BEGIN PGP PRIVATE KEY BLOCK-----
 
-xYYEavjdExYJKwYBBAHaRw8BAQdA/WHmUoz8qqvgE7IOnKDbysMWMunHuoz+
-fmAIQV+ieDj+CQMId0Zy6PGAqQLgik6zsWht2TXD1ZUAji7lVs7jHreqXIO2
-DGY6BGC0ONcXtuDlklklKfwLs5kCUxYBU4W2+zTYGXJRmCY+2vOXt26ZJWJ9
-p80bSm9uIFNtaXRoIDxqb25AZXhhbXBsZS5jb20+wsATBBMWCgCFBYJq+N0T
-AwsJBwkQqlcxXysPsutFFAAAAAAAHAAgc2FsdEBub3RhdGlvbnMub3BlbnBn
-cGpzLm9yZzpph7QoXuF+RG9MpmRucdrQZsZLGGvO3d637SEVpfVzBRUKCA4M
-BBYAAgECGQECmwMCHgEWIQSvNzd8vR+9ee7xfd+qVzFfKw+y6wAAFhwBAOOm
-tHewMvUuXv5LJ4DayehxbPc71atSDevpUI4KVCkkAQD5uTm8SaTQi7zExBBN
-/fhchrfVZnmwNWLJhofsAZHBBceLBGr43RMSCisGAQQBl1UBBQEBB0Dv3g/N
-km8lnh2R6yYcTGMQJEW2+SUhe/851snpLm8gOgMBCAf+CQMIX8gbRW50D2Lg
-pmlA4UOYfU1+64eUrizcboT7xc2PNXjCZaPmIY8CgpCY/sn8lzjAMnx4pca2
-vEQa++Uyf5K3KiN17eRUYfY64WnVg3TnqcK+BBgWCgBwBYJq+N0TCRCqVzFf
-Kw+y60UUAAAAAAAcACBzYWx0QG5vdGF0aW9ucy5vcGVucGdwanMub3JnszQE
-b8pEZHreKOjwJ+b9YFDWnFQWxaBBFO624DVsIwYCmwwWIQSvNzd8vR+9ee7x
-fd+qVzFfKw+y6wAAQ3kBAI5Wp/rWUIG4ZImd0M9SZNT1sL+DALCZGjy3+GU+
-rEoNAQCYttM/CyrPhPTTJVl0VOC7uahBzpY+kiy385j1KqHDBA==
-=i0rs
+xVgEavv2wBYJKwYBBAHaRw8BAQdA80xKW/kssD8Lr+wjXrML4tBMWqPZN9CL
+jyikEE/nkRQAAP40zJvRm65CSo69fb+6w6kFwFB+ah0W0R0kEDJp2CXsQhAE
+zRtKb24gU21pdGggPGpvbkBleGFtcGxlLmNvbT7CwBMEExYKAIUFgmr79sAD
+CwkHCRBD2VFzGYY5RUUUAAAAAAAcACBzYWx0QG5vdGF0aW9ucy5vcGVucGdw
+anMub3JnbnelVRbmAtn+fMqUYzWGyidhaoeVrK/wIIq+YlA63HIFFQoIDgwE
+FgACAQIZAQKbAwIeARYhBPNuLKlDwDf39RcB+0PZUXMZhjlFAABP4wEAsGHB
+BSvnilwqpz03BO8DDZJ43KG5QHG1NmMlqLn/44IA/i63MOo8tX7BP9EykIap
+dvZJvhGME2M69QQmX/3+ej8Bx10Eavv2wBIKKwYBBAGXVQEFAQEHQIYNgvzl
+7rq1XGpOhDbVL+0Y5opqAqst3no9TtxsUc4/AwEIBwAA/3Tm2yvQOS10aubP
+ESudFJxxO09IZh58fYJ7S99AfOJ4D67CvgQYFgoAcAWCavv2wAkQQ9lRcxmG
+OUVFFAAAAAAAHAAgc2FsdEBub3RhdGlvbnMub3BlbnBncGpzLm9yZyh0NgYZ
+6eKWjLMRW1PWHoB70/fvdO+BzZIl9CswEPfmApsMFiEE824sqUPAN/f1FwH7
+Q9lRcxmGOUUAALDNAQDX6Flq3xer0XudeBKeJeftLrmb1+F00YjiocvPTSm6
+jQEAxnfpoi9UBKTYwg4f5EF2sO9wxN1rM9pAFSyWwUrslAU=
+=/mU1
 -----END PGP PRIVATE KEY BLOCK-----`
   }));
 }
