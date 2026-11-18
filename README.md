@@ -54,7 +54,7 @@ classDiagram
     +privateKey
   }
   PgpKeypair --|> Keypair: extends
-  Encrypter --> PgpKeypair : imports
+  Encrypter --> PgpKeypair : depends on
   note for Encrypter "Converts between encrypted and cleartext datasets."
   note for PgpKeypair "Created from existing armored PGP public/private keys."
 ```
