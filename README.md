@@ -98,7 +98,7 @@ How to encrypt and decrypt an in-memory dataset.
 
 import { 
   Encrypter, PgpKeypair, iri 
-} from "https://cdn.jsdelivr.net/gh/doga/rdf-encryption@1.1.0//mod.mjs";
+} from "https://cdn.jsdelivr.net/gh/doga/rdf-encryption@1.1.0/mod.mjs";
 
 // https://github.com/rdfjs/N3.js
 import {
@@ -111,8 +111,18 @@ async function run() {
   const
   keypair   = await createKeypair(),
   encrypter = new Encrypter({
-    keys: {encryption: [keypair], decryption: [keypair]},
-    predicates: {select: [iri`https://site.example/name`]} 
+    keys: { encryption: [keypair], decryption: [keypair] },
+
+    // `/predicates` defines which statements will have their literals encrypted,
+    // based on the statement's predicate.
+    // Omit this field to encrypt all literals.
+    predicates: {
+      // Use `/predicates/select` to encrypt only some literals. Omit this field to encrypt all literals.
+      select: [iri`https://site.example/name`],
+
+      // Use `/predicates/ignore` to leave some literals in cleartext that would otherwise have been encrypted. Omit this field to encrypt all selected literals.
+      ignore: [iri`https://site.example/xyz`],
+    } 
   }),
 
   statement = t.quad(
