@@ -117,11 +117,13 @@ async function run() {
     // based on the statement's predicate.
     // Omit this field to encrypt all literals.
     predicates: {
-      // Use `/predicates/select` to encrypt only some literals. Omit this field to encrypt all literals.
+      // Use `/predicates/select` to encrypt only some literals. Omit this field to 
+      // encrypt all literals.
       select: [iri`https://site.example/name`],
 
-      // Use `/predicates/ignore` to leave some literals in cleartext that would otherwise have been encrypted. Omit this field to encrypt all selected literals.
-      ignore: [iri`https://site.example/xyz`],
+      // Use `/predicates/ignore` to leave some literals in cleartext that would otherwise
+      // have been encrypted. Omit this field to encrypt all selected literals.
+      ignore: [iri`https://site.example/xyz`, iri`https://site.example/abc`],
     } 
   }),
 
