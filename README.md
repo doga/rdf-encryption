@@ -98,7 +98,7 @@ How to encrypt and decrypt an in-memory dataset.
 
 import { 
   Encrypter, PgpKeypair, iri 
-} from "https://cdn.jsdelivr.net/gh/doga/rdf-encryption@1.0.0/mod.mjs";
+} from "https://cdn.jsdelivr.net/gh/doga/rdf-encryption@1.1.0//mod.mjs";
 
 // https://github.com/rdfjs/N3.js
 import {
@@ -111,17 +111,24 @@ async function run() {
   const
   keypair   = await createKeypair(),
   encrypter = new Encrypter({
-    keys      : {encryption: [keypair], decryption: [keypair]},
-    predicates: {select: [iri`https://site.example/name`]} // omitting unused field: `ignore`
+    keys: {encryption: [keypair], decryption: [keypair]},
+    predicates: {select: [iri`https://site.example/name`]} 
   }),
+
+  statement = t.quad(
+    t.namedNode('https://site.example/person1'),
+    t.namedNode('https://site.example/name'),
+    t.literal('Jon Ka'),
+  ),
 
   // in-memory dataset compliant with https://rdf.js.org/dataset-spec/#dataset-interface
   dataset = new Store([
+    statement,
     t.quad(
-      t.namedNode('https://site.example/person1'),
-      t.namedNode('https://site.example/name'),
-      t.literal('Jon Ka'),
-    )
+      statement,
+      t.namedNode('https://site.example/says'),
+      t.namedNode('https://site.example/person2'),
+    ),
   ]),
 
   // in-memory dataset compliant with https://rdf.js.org/dataset-spec/#dataset-interface
@@ -183,7 +190,7 @@ function datasetToString(dataset) {
     const {subject, predicate, object, graph} = quad;
     res.push(`${termToString(subject)} ${termToString(predicate)} ${termToString(object)}`);
   }
-  return res.join('\n');
+  return `${res.join(' .\n\n')} .`;
 }
 
 
@@ -200,18 +207,30 @@ Output:
 
 ```text
 Encrypted dataset:
- << https://site.example/person/1 https://site.example/name -----BEGIN PGP MESSAGE-----
+ << https://site.example/person1 https://site.example/name -----BEGIN PGP MESSAGE-----
 
-wV4DSan8Z5TI1w0SAQdAot+/Q5Yu5JWdWAcdlSRDB+b3OeV+QglMx4B4zvQt
-PwAwfEgApUyLifgjpD9ZRzwE1J/7oeY2j/r8yKPyP1rT54RAbtxi7v5W+OXO
-oqNVhXaH0jcBuaC1uSPgHAhFh5t4vlwjnkqvuDEir73AhgviNtn0kX+wN1D0
-aMfISL2Q8twkk1rW0qV1wg1l
-=xSLV
+wV4DSan8Z5TI1w0SAQdA1DyhHpCujPVDpDcXq+/cXAqiKUYWAHs2NJWN7CRh
+u00wSs45njaLRFq1uzCmkcAmrTC7gNWzuO+0mznBh27m8uxiIBTRylGCZNUh
+pyffvXAj0jcBRJgqCeX3HB/GTuhIBdCRsSzaEsDzKS72zw/m1u15SbNHEZlg
+5KFwVkgQj+jJIJZMckX8yPgW
+=27fM
 -----END PGP MESSAGE-----
- >> https://vocab.qworum.net/qrmm.ttl#pgpencrypted true 
+ >> https://vocab.qworum.net/qrmm.ttl#pgpencrypted true .
+
+<< << https://site.example/person1 https://site.example/name -----BEGIN PGP MESSAGE-----
+
+wV4DSan8Z5TI1w0SAQdA1DyhHpCujPVDpDcXq+/cXAqiKUYWAHs2NJWN7CRh
+u00wSs45njaLRFq1uzCmkcAmrTC7gNWzuO+0mznBh27m8uxiIBTRylGCZNUh
+pyffvXAj0jcBRJgqCeX3HB/GTuhIBdCRsSzaEsDzKS72zw/m1u15SbNHEZlg
+5KFwVkgQj+jJIJZMckX8yPgW
+=27fM
+-----END PGP MESSAGE-----
+ >> https://vocab.qworum.net/qrmm.ttl#pgpencrypted true >> https://site.example/says https://site.example/person2 . 
 
 Decrypted dataset:
- https://site.example/person/1 https://site.example/name Jon Ka 
+ https://site.example/person1 https://site.example/name Jon Ka .
+
+<< https://site.example/person1 https://site.example/name Jon Ka >> https://site.example/says https://site.example/person2 .
 ```
 
 Run the code above by typing this in your terminal (requires [Deno](https://deno.com/) 2+):
