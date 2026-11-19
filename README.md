@@ -100,7 +100,7 @@ import {
   Encrypter, PgpKeypair, iri 
 } from "https://cdn.jsdelivr.net/gh/doga/rdf-encryption@1.1.0/mod.mjs";
 
-// https://github.com/rdfjs/N3.js
+// Library for handling in-memory RDF datasets. <https://github.com/rdfjs/N3.js>
 import {
   Store, Parser, DataFactory as t, Writer,
 } from 'https://unpkg.com/n3@v2.13.12/browser/n3.esm.min.js';
@@ -131,7 +131,7 @@ async function run() {
     t.literal('Jon Ka'),
   ),
 
-  // in-memory dataset compliant with https://rdf.js.org/dataset-spec/#dataset-interface
+  // In-memory dataset compliant with <https://rdf.js.org/dataset-spec/#dataset-interface>
   dataset = new Store([
     statement,
     t.quad(
@@ -141,10 +141,10 @@ async function run() {
     ),
   ]),
 
-  // in-memory dataset compliant with https://rdf.js.org/dataset-spec/#dataset-interface
+  // In-memory dataset compliant with <https://rdf.js.org/dataset-spec/#dataset-interface>
   encryptedDataset = await encrypter.encrypt(dataset),
 
-  // in-memory dataset compliant with https://rdf.js.org/dataset-spec/#dataset-interface
+  // In-memory dataset compliant with <https://rdf.js.org/dataset-spec/#dataset-interface>
   decryptedDataset = await encrypter.decrypt(encryptedDataset);
 
   console.debug('Encrypted dataset:\n', datasetToString(encryptedDataset), '\n');
